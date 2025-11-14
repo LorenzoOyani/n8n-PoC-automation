@@ -20,5 +20,7 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.11"
-  }
+  },
+  "dev": "nodemon api/server.js"
+
 }

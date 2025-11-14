@@ -4,6 +4,14 @@ const cors = require('cors');
 const axios = require('axios');
 const {Pool} = require('pg');
 
+process.on('unhandledRejection', (reason) => {
+  console.error('UNHANDLED REJECTION:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT EXCEPTION:', err);
+});
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -169,11 +177,8 @@ app.post('/api/trigger-wallet-email', async (req, res) => {
 // });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`
-    Database: ${process.env.DB_NAME}@${process.env.DB_HOST}:${process.env.DB_PORT}           ║
-
-  `);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on port ${PORT}`);
 });
 
 // Graceful shutdown
