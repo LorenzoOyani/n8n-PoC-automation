@@ -1,0 +1,126 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "wallet-email",
+        "options": {
+          "binaryPropertyName": "=data",
+          "rawBody": "={\n  \"status\": \"ok\",\n  \"message\": \"Workflow received\"\n}\n"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "249c9f81-e0b9-422b-b7c0-a598067ba432",
+      "name": "Webhook",
+      "webhookId": "73f36241-6dd3-452f-ae59-fa1fd6d12a58"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, email, first_name, wallet_balance\nFROM subscribers\nWHERE id = $1;\n",
+        "options": {
+          "queryReplacement": "={{ $node[\"Webhook\"].json[\"body\"][\"subscriberId\"] }}\n\n\n"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        176,
+        144
+      ],
+      "id": "ae038046-b3e8-494b-b963-f610213072f4",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "3fstTQYYORqmeVsw",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.mailersend.com/v1/email",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer mlsn.b150cf0384aa0f82d3451de54301ce67a2fd064ea85e395e96296de999198b6a"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "=json",
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "jsonBody": "{\n  \"from\": {\n    \"email\": \"no-reply@test-y7zpl98w22345vx6.mlsender.net\",\n    \"name\": \"Bema Music\"\n  },\n  \"to\": [\n    {\n      \"email\": \"jerumehlawrence@gmail.com\",\n      \"name\": \"Korede\"\n    }\n  ],\n  \"subject\": \"Wallet Balance Test for Korede\",\n  \"text\": \"Hi Korede, your current wallet balance is ₦100.00.\",\n  \"html\": \"Hi Korede,<br><br>Your current wallet balance is <strong>₦100.00</strong>.<br><br>Regards,<br>Bema Music\"\n}\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        416,
+        272
+      ],
+      "id": "d3b135ee-de7f-4f40-b257-e031ba6fef3a",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "73e2706c-5968-417b-9a75-5e51d7301f5e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a5b863b4eb6eb2c4c2f314a08829bbcfb0ccb3b6aeb70d7090c3876d1476b072"
+  },
+  "id": "PK7QMxfUCcia0yQg",
+  "tags": [
+    {
+      "updatedAt": "2025-11-14T11:12:35.595Z",
+      "createdAt": "2025-11-14T11:12:35.595Z",
+      "id": "EszDkrCJzglygObe",
+      "name": "Wallet Balance Email"
+    }
+  ]
+}

@@ -87,11 +87,16 @@ app.get('/api/get-wallet-balance', async (req, res) => {
 ///API Endpoint 2:
 app.post('/api/trigger-wallet-email', async (req, res) => {
   try {
-    const { subscriberId } = req.body;
+    console.log('Incoming request to /api/trigger-wallet-email');
+    console.log('Headers:', req.headers);
+    console.log('Raw body:', req.body);
+
+    // SAFE DESTRUCTURE – avoids crash when req.body is undefined
+    const { subscriberId } = req.body || {};
 
     if (!subscriberId) {
       return res.status(400).json({
-        error: 'Missing required parameter: subscriberId'
+        error: 'Missing required parameter: subscriberId',
       });
     }
 
@@ -103,20 +108,23 @@ app.post('/api/trigger-wallet-email', async (req, res) => {
 
     if (checkResult.rows.length === 0) {
       return res.status(404).json({
-        error: 'Subscriber not found'
+        error: 'Subscriber not found',
       });
     }
 
     const subscriber = checkResult.rows[0];
-    console.log(`Triggering n8n workflow for ${subscriber.email}...`);
+    console.log(
+      `Triggering n8n workflow for ${subscriber.email} with subscriberId=${subscriberId}...`
+    );
+    console.log(`Using N8N_WEBHOOK_URL=${process.env.N8N_WEBHOOK_URL}`);
 
     // Trigger n8n webhook
     const n8nResponse = await axios.post(
       process.env.N8N_WEBHOOK_URL,
-      { subscriberId: subscriberId },
+      { subscriberId },
       {
         headers: { 'Content-Type': 'application/json' },
-        timeout: 10000 // 10 second timeout
+        timeout: 10000,
       }
     );
 
@@ -128,53 +136,27 @@ app.post('/api/trigger-wallet-email', async (req, res) => {
       subscriber: {
         id: subscriber.id,
         email: subscriber.email,
-        name: subscriber.first_name
+        name: subscriber.first_name,
       },
-      n8n_response: n8nResponse.data
+      n8n_response: n8nResponse.data,
     });
-
   } catch (error) {
     console.error('Error triggering workflow:', error);
 
     if (error.code === 'ECONNREFUSED') {
       return res.status(503).json({
         error: 'Cannot connect to n8n',
-        message: 'Make sure n8n is running and the webhook URL is correct'
+        message: 'Make sure n8n is running and the webhook URL is correct',
       });
     }
 
     res.status(500).json({
       error: 'Internal server error',
-      message: error.message
+      message: error.message,
     });
   }
 });
 
-
-// Get single subscriber (helper endpoint)
-// app.get('/api/subscribers/:id', async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//
-//     const result = await pool.query(
-//       'SELECT * FROM subscribers WHERE id = $1',
-//       [id]
-//     );
-//
-//     if (result.rows.length === 0) {
-//       return res.status(404).json({ error: 'Subscriber not found' });
-//     }
-//
-//     res.json(result.rows[0]);
-//
-//   } catch (error) {
-//     console.error('Error fetching subscriber:', error);
-//     res.status(500).json({
-//       error: 'Internal server error',
-//       message: error.message
-//     });
-//   }
-// });
 
 // Start server
 app.listen(PORT, "0.0.0.0", () => {

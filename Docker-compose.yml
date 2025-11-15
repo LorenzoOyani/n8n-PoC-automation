@@ -44,13 +44,11 @@ services:
       DB_PASSWORD: Admin
       PORT: 3000
 
-      # 👇 Replace `/webhook/your-workflow-path` with the actual n8n webhook path
-      N8N_WEBHOOK_URL: http://n8n:5678/webhook-test/wallet-email
+      N8N_WEBHOOK_URL: http://n8n:5678/webhook/wallet-email
     depends_on:
       - postgres
       - n8n
 
-    # ⛔ Removed `npm run setup-db` from here – only run it manually when needed
     command: sh -c "sleep 10 && npm start"
 
 volumes:
